@@ -21,7 +21,7 @@ func main () {
         log.Fatalf("error reading key file: %s", err)
     }
 
-    kms, err := decrypt.NewKMS([]byte(key))
+    kms, err := decrypt.NewKMS(key)
     if err != nil {
         log.Fatalf("error creating decrypter: %s", err)
     }
