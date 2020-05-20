@@ -1,5 +1,5 @@
 # aws-decryption-go
-Decrypt KMS-formatted data using a custom private key.
+Decrypt AWS Encryption SDK formatted blobs using a custom private key.
 
 This repo implements part of the [AWS Encryption SDK spec](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html) in go. It is presently limitted in scope:
 * Decryption only
