@@ -20,19 +20,20 @@ func main () {
     if err != nil {
         log.Fatalf("error reading key file: %s", err)
     }
-
-    kms, err := decrypt.NewKMS(key)
-    if err != nil {
-        log.Fatalf("error creating decrypter: %s", err)
-    }
     dataBytes, err := base64.StdEncoding.DecodeString(ciphertext)
     if err != nil {
         log.Fatalf("error decoding base64 ciphertext: %s", err)
     }
-    result, err := kms.Decrypt(dataBytes)
+
+    decrypter, err := decrypt.New(key)
+    if err != nil {
+        log.Fatalf("error creating decrypter: %s", err)
+    }
+    result, err := decrypter.Decrypt(dataBytes)
     if err != nil {
         log.Fatalf("error decrypting data: %s", err)
     }
+    
     fmt.Println("decrypted data: %s", string(result))
 }
 ```

@@ -22,13 +22,13 @@ type Decrypter interface {
 	Decrypt(CipherText) ([]byte, error)
 }
 
-// KMS is a Decrypter for KMS encoded payloads.
-type KMS struct {
+// Decrypt is a Decrypter for AWS Encryption SDK encoded payloads.
+type Decrypt struct {
 	pk *rsa.PrivateKey
 }
 
-// NewKMS creates a new KMS Decrypter given a private key pem file.
-func NewKMS(privKey []byte) (d KMS, err error) {
+// New creates a new SDK Decrypter given a private key pem file.
+func New(privKey []byte) (d Decrypt, err error) {
 	// Extract the PEM-encoded data block.
 	pem, _ := pem.Decode(privKey)
 	if pem == nil {
@@ -43,12 +43,12 @@ func NewKMS(privKey []byte) (d KMS, err error) {
 	if !ok {
 		return d, fmt.Errorf("supplied key is not an RSA private key")
 	}
-	return KMS{rsapk}, nil
+	return Decrypt{rsapk}, nil
 }
 
-// Decrypt does a decrypt of a KMS payload.
-func (d *KMS) Decrypt(in CipherText) (out []byte, err error) {
-	msg, err := newKMSMessage(in)
+// Decrypt does a decrypt of an AWS SDK payload.
+func (d *Decrypt) Decrypt(in CipherText) (out []byte, err error) {
+	msg, err := newMessage(in)
 	if err != nil {
 		return out, err
 	}

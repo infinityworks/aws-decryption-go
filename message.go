@@ -11,18 +11,18 @@ import (
 
 // https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/message-format.html
 
-type kmsMessage struct {
-	header kmsMessageHeader
-	body   kmsMessageBody
-	footer kmsMessageFooter
+type message struct {
+	header messageHeader
+	body   messageBody
+	footer messageFooter
 }
 
 const (
-	kmsMessageContentTypeNonFramed uint8 = 0x01
-	kmsMessageContentTypeFramed          = 0x02
+	messageContentTypeNonFramed uint8 = 0x01
+	messageContentTypeFramed          = 0x02
 )
 
-type kmsMessageHeader struct {
+type messageHeader struct {
 	version     uint8
 	kind        uint8
 	algID       uint16
@@ -30,7 +30,7 @@ type kmsMessageHeader struct {
 	aadLen      uint16
 	aad         []byte
 	keyCount    uint16
-	keys        []kmsMessageKey
+	keys        []messageKey
 	contentType uint8
 	reserved    uint32
 	ivLen       uint8
@@ -39,7 +39,7 @@ type kmsMessageHeader struct {
 	authTag     []byte
 }
 
-type kmsMessageKey struct {
+type messageKey struct {
 	providerIDLen uint16
 	providerID    []byte
 	infoLen       uint16
@@ -48,33 +48,33 @@ type kmsMessageKey struct {
 	key           []byte
 }
 
-type kmsMessageBody struct {
-	frames []kmsMessageFrame
+type messageBody struct {
+	frames []messageFrame
 }
 
-type kmsMessageBodyAADContent []byte
+type messageBodyAADContent []byte
 
 var (
-	kmsMessageBodyFrameAAD      kmsMessageBodyAADContent = []byte("AWSKMSEncryptionClient Frame")
-	kmsMessageBodyFinalFrameAAD                          = []byte("AWSKMSEncryptionClient Final Frame")
+	messageBodyFrameAAD      messageBodyAADContent = []byte("AWSencryptionClient Frame")
+	messageBodyFinalFrameAAD                       = []byte("AWSencryptionClient Final Frame")
 )
 
-type kmsMessageFrame struct {
+type messageFrame struct {
 	seqNum        uint32
 	iv            []byte
 	contentLength uint32
 	content       []byte
 	authTag       []byte
-	aad           kmsMessageBodyAADContent
+	aad           messageBodyAADContent
 }
 
-type kmsMessageFooter struct {
+type messageFooter struct {
 	sigLen uint16
 	sig    []byte
 }
 
-func newKMSMessage(in []byte) (m *kmsMessage, err error) {
-	m = &kmsMessage{}
+func newMessage(in []byte) (m *message, err error) {
+	m = &message{}
 	defer func() {
 		if r := recover(); r != nil {
 			var ok bool
@@ -112,7 +112,7 @@ func newKMSMessage(in []byte) (m *kmsMessage, err error) {
 	readIntoBytes(16, &m.header.msgID)
 	readIntoVarBytes(&m.header.aadLen, &m.header.aad)
 	readInto(&m.header.keyCount)
-	m.header.keys = make([]kmsMessageKey, m.header.keyCount)
+	m.header.keys = make([]messageKey, m.header.keyCount)
 	for i, k := range m.header.keys {
 		readIntoVarBytes(&k.providerIDLen, &k.providerID)
 		readIntoVarBytes(&k.infoLen, &k.info)
@@ -131,13 +131,13 @@ func newKMSMessage(in []byte) (m *kmsMessage, err error) {
 	readIntoBytes(alg.authTagLen, &m.header.authTag)
 
 	// Read body.
-	if m.header.contentType != kmsMessageContentTypeFramed {
+	if m.header.contentType != messageContentTypeFramed {
 		err = errors.New("unable to handle unframed body")
 		return
 	}
 	finalFrame := false
 	for !finalFrame {
-		frame := kmsMessageFrame{}
+		frame := messageFrame{}
 		readInto(&frame.seqNum)
 		finalFrame = bool(frame.seqNum == 0xFFFFFFFF)
 		if !finalFrame {
@@ -145,13 +145,13 @@ func newKMSMessage(in []byte) (m *kmsMessage, err error) {
 			frame.contentLength = m.header.frameLen
 			readIntoBytes(uint64(m.header.frameLen), &frame.content)
 			readIntoBytes(alg.authTagLen, &frame.authTag)
-			frame.aad = kmsMessageBodyFrameAAD
+			frame.aad = messageBodyFrameAAD
 		} else {
 			readInto(&frame.seqNum)
 			readIntoBytes(uint64(m.header.ivLen), &frame.iv)
 			readIntoVarBytes(&frame.contentLength, &frame.content)
 			readIntoBytes(alg.authTagLen, &frame.authTag)
-			frame.aad = kmsMessageBodyFinalFrameAAD
+			frame.aad = messageBodyFinalFrameAAD
 		}
 		m.body.frames = append(m.body.frames, frame)
 	}
@@ -161,14 +161,14 @@ func newKMSMessage(in []byte) (m *kmsMessage, err error) {
 	return
 }
 
-func (b kmsMessage) getHKDFInfo() []byte {
+func (b message) getHKDFInfo() []byte {
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, b.header.algID)
 	binary.Write(&buf, binary.BigEndian, b.header.msgID)
 	return buf.Bytes()
 }
 
-func (b kmsMessage) getAAD(frameIndex int) []byte {
+func (b message) getAAD(frameIndex int) []byte {
 	f := b.body.frames[frameIndex]
 	var buf bytes.Buffer
 	binary.Write(&buf, binary.BigEndian, b.header.msgID)

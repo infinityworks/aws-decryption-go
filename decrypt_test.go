@@ -60,7 +60,7 @@ WzJEuOEDlj62T96u5tY6BJCJXOyNO/FyMn5sLi/WfZo1O0QuFPCt8QIEWaHXToU6
 -----END PRIVATE KEY-----`
 
 func Test(t *testing.T) {
-	kms, err := NewKMS([]byte(key))
+	decrypter, err := New([]byte(key))
 	if err != nil {
 		t.Fatalf("unexpected error creating decrypter: %s", err)
 	}
@@ -68,7 +68,7 @@ func Test(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error decoding base64: %s", err)
 	}
-	result, err := kms.Decrypt(dataBytes)
+	result, err := decrypter.Decrypt(dataBytes)
 	if err != nil {
 		t.Fatalf("unexpected error decrypting: %s", err)
 	}
