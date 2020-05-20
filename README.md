@@ -22,16 +22,16 @@ func main () {
     }
 
     kms, err := decrypt.NewKMS([]byte(key))
-	if err != nil {
-		log.Fatalf("error creating decrypter: %s", err)
-	}
-	dataBytes, err := base64.StdEncoding.DecodeString(ciphertext)
-	if err != nil {
-		log.Fatalf("error decoding base64 ciphertext: %s", err)
-	}
-	result, err := kms.Decrypt(dataBytes)
-	if err != nil {
-		log.Fatalf("error decrypting data: %s", err)
+    if err != nil {
+        log.Fatalf("error creating decrypter: %s", err)
+    }
+    dataBytes, err := base64.StdEncoding.DecodeString(ciphertext)
+    if err != nil {
+        log.Fatalf("error decoding base64 ciphertext: %s", err)
+    }
+    result, err := kms.Decrypt(dataBytes)
+    if err != nil {
+        log.Fatalf("error decrypting data: %s", err)
     }
     fmt.Println("decrypted data: %s", string(result))
 }
