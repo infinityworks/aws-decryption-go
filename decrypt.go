@@ -14,12 +14,9 @@ import (
 	"golang.org/x/crypto/hkdf"
 )
 
-// CipherText is a byte array that is encrypted in some way.
-type CipherText []byte
-
 // Decrypter takes a ciphertext and decrypts it.
 type Decrypter interface {
-	Decrypt(CipherText) ([]byte, error)
+	Decrypt([]byte) ([]byte, error)
 }
 
 // Decrypt is a Decrypter for AWS Encryption SDK encoded payloads.
@@ -47,7 +44,7 @@ func New(privKey []byte) (d Decrypt, err error) {
 }
 
 // Decrypt does a decrypt of an AWS SDK payload.
-func (d *Decrypt) Decrypt(in CipherText) (out []byte, err error) {
+func (d *Decrypt) Decrypt(in []byte) (out []byte, err error) {
 	msg, err := newMessage(in)
 	if err != nil {
 		return out, err
