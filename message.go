@@ -55,8 +55,8 @@ type messageBody struct {
 type messageBodyAADContent []byte
 
 var (
-	messageBodyFrameAAD      messageBodyAADContent = []byte("AWSencryptionClient Frame")
-	messageBodyFinalFrameAAD                       = []byte("AWSencryptionClient Final Frame")
+	messageBodyFrameAAD      messageBodyAADContent = []byte("AWSKMSEncryptionClient Frame")
+	messageBodyFinalFrameAAD                       = []byte("AWSKMSEncryptionClient Final Frame")
 )
 
 type messageFrame struct {
